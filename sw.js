@@ -1,6 +1,6 @@
 // Kraftstufe service worker: makes the app work offline.
 // Bump VERSION whenever you change index.html so phones pick up the new version.
-const VERSION = 'kraftstufe-v1';
+const VERSION = 'kraftstufe-v2';
 const SHELL = [
   './',
   'index.html',
