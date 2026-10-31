@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Kraftstufe</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kraftstufe">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Always dark by design: the same black palette in both viewer modes */
+:root{
+  --bg:#000000; --surface:#0D0D10; --raise:#17171C; --ink:#F5F5F7; --muted:#8D8D98; --line:#25252C;
+  --red:#FF1F45; --red-dim:rgba(255,31,69,.14); --red-ink:#FFFFFF;
+  --violet:#9D4DFF; --violet-dim:rgba(157,77,255,.18); --good:#3DDC97;
+  --r-none:#3A3A44; --r0:#C27B45; --r1:#B8C2CD; --r2:#F2C230; --r3:#4FD1C5; --r4:#6C8CFF; --r5:#E03BFF;
+  --display:"Anton","Impact","Arial Narrow Bold",sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){ --bg:#000000; --surface:#0D0D10; --ink:#F5F5F7; color-scheme:dark; } }
+:root[data-theme="dark"]{ --bg:#000000; --surface:#0D0D10; --ink:#F5F5F7; color-scheme:dark; }
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+body.training{padding-bottom:120px}
+.wrap{max-width:720px;margin:0 auto;padding:18px 16px 64px}
+button,input{font:inherit;color:inherit}
+button{-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--violet);outline-offset:2px;border-radius:8px}
+
+/* Hero */
+.hero{position:relative;padding:6px 0 24px;margin-bottom:6px;isolation:isolate}
+.hero:not(.slim)::before{content:"";position:absolute;right:0;top:-30px;width:min(340px,85vw);height:340px;background:radial-gradient(circle,rgba(157,77,255,.22),transparent 65%);z-index:-1;pointer-events:none}
+.hero:not(.slim)::after{content:"";position:absolute;left:-10px;top:40px;width:220px;height:220px;background:radial-gradient(circle,rgba(255,31,69,.12),transparent 65%);z-index:-1;pointer-events:none}
+.brand{display:flex;justify-content:space-between;align-items:center;font:15px/1 var(--display);letter-spacing:.06em;color:var(--red);margin-bottom:14px}
+.brand .tot{display:inline-flex;align-items:center;gap:6px;font:600 13px/1 var(--body);letter-spacing:0;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}
+.stat{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(13,13,16,.85);border:1px solid var(--line);border-radius:16px;min-width:0}
+.stat b{display:block;font:26px/1 var(--display);letter-spacing:.01em}
+.stat span{display:block;font-size:12px;color:var(--muted);line-height:1.25;margin-top:3px}
+.stat>svg{flex:none}
+.dots{display:flex!important;gap:6px;height:34px;align-items:center;margin:0!important}
+.dots i{width:13px;height:13px;border-radius:50%;border:2px solid var(--line)}
+.dots i.on{background:var(--red);border-color:var(--red);box-shadow:0 0 10px var(--red)}
+.flame path{transform-box:fill-box;transform-origin:50% 100%}
+.flame .fo{animation:fl 1.7s ease-in-out infinite}
+.flame .fi{animation:fl 1.15s ease-in-out infinite reverse}
+.flame .fc{animation:fl .8s ease-in-out infinite}
+.flame.f0 path{animation:none}
+.flame.f3{filter:drop-shadow(0 0 6px rgba(157,77,255,.6))}
+.flame.f2{filter:drop-shadow(0 0 5px rgba(255,90,40,.5))}
+@keyframes fl{0%,100%{transform:scale(1,1) skewX(0)}30%{transform:scale(.95,1.07) skewX(-3deg)}65%{transform:scale(1.03,.97) skewX(2deg)}}
+.motiv{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.motiv b{display:block;font:24px/1.1 var(--display);letter-spacing:.01em}
+.next{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 11px 4px 6px;border-radius:999px;background:var(--raise);color:var(--ink);font-size:13px;white-space:nowrap}
+.next b{font-weight:700}
+.next.sm{margin:0;font-size:12px;padding:3px 9px;color:var(--muted)}
+.streakup{display:inline-flex;align-items:center;gap:8px;margin-top:10px;padding:6px 14px 6px 10px;border-radius:999px;background:var(--red-dim);font-weight:600}
+.hero-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 22px;align-items:end}
+.lvl{font:clamp(104px,26vw,168px)/.8 var(--display);color:var(--ink);text-shadow:0 0 0 transparent}
+.lvl small{display:block;font:600 14px/1 var(--body);color:var(--violet);margin-bottom:10px}
+.lvl-title{font:30px/1 var(--display);letter-spacing:.01em}
+.bar{height:10px;background:var(--raise);border-radius:5px;margin:12px 0 8px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--violet),var(--red));border-radius:5px;transition:width .6s ease}
+.meta{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.hero.slim{padding:0 0 12px}
+.slimrow{display:flex;align-items:center;gap:12px}
+.slimrow .lv{font:34px/1 var(--display)}
+.slimrow .bar{flex:1;margin:0}
+.slimrow span{font-size:13px;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+
+/* Tabs */
+nav{display:flex;gap:2px;margin:0 0 22px;border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{display:inline-flex;align-items:center;gap:7px;border:0;background:none;padding:12px 14px;font:600 15px/1 var(--body);cursor:pointer;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-1px}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+nav button[aria-selected="true"] svg{color:var(--red)}
+
+h2{font:34px/1.05 var(--display);margin:0 0 6px;letter-spacing:.005em}
+h3{font:22px/1.1 var(--display);margin:0;letter-spacing:.01em}
+p.lead{color:var(--muted);margin:0 0 20px;max-width:58ch}
+.small{font-size:14px;color:var(--muted)}
+.btn{border:0;border-radius:12px;padding:14px 20px;font-weight:700;cursor:pointer;background:var(--red);color:var(--red-ink);min-height:50px}
+.btn.ghost{background:var(--raise);color:var(--ink)}
+.btn.quiet{background:none;color:var(--muted);padding:8px 10px;min-height:0}
+.btn.danger{background:none;color:var(--red);border:1.5px solid var(--line)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn,.chip,.check,.step button{transition:transform .1s ease,background-color .15s ease}
+.btn:not(:disabled):active,.chip:active,.check:active{transform:scale(.96)}
+.btn:not(.ghost):not(.quiet):not(.danger):not(:disabled){box-shadow:0 6px 20px -8px rgba(255,31,69,.7)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stack>*+*{margin-top:12px}
+.notice{border-left:3px solid var(--red);background:var(--surface);padding:14px 16px;border-radius:0 12px 12px 0;margin-bottom:18px}
+
+/* Start */
+.start{display:grid;gap:10px}
+.start .btn{text-align:left;padding:18px 20px}
+.start .btn span{display:block;font-weight:500;font-size:14px;opacity:.8;margin-top:2px}
+.start .btn em{display:block;font-style:normal;font-weight:600;font-size:12px;opacity:.85;margin-bottom:4px}
+.start .day-next{font:30px/1.05 var(--display);letter-spacing:.01em;padding:18px 20px 16px}
+.start .day-next span{font-family:var(--body);letter-spacing:0}
+.start .day-next em{font-family:var(--body);letter-spacing:0}
+.grp{font:26px/1 var(--display);margin:18px 0 0;letter-spacing:.01em}
+.grp:first-child{margin-top:0}
+
+/* Exercise block */
+.ex{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 14px 10px}
+.ex-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ex-head h3{flex:1;font-size:24px}
+.tip{font-size:14px;color:var(--muted);margin:0 0 10px;padding-left:10px;border-left:2px solid var(--violet)}
+.tip b{color:var(--ink);font-weight:600}
+.set{display:grid;grid-template-columns:22px 1fr 1fr 52px;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+.set .n{font:18px var(--display);color:var(--muted);text-align:center}
+.step{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;background:var(--raise);border-radius:12px;height:50px;overflow:hidden}
+.step button{border:0;background:none;height:100%;font-size:22px;font-weight:600;color:var(--muted);cursor:pointer}
+.step button:active{background:var(--line)}
+.step label{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
+.step input{width:100%;border:0;background:none;text-align:center;font:24px/1 var(--display);padding:0;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.step input:focus{outline:none}
+.step:focus-within{box-shadow:inset 0 0 0 2px var(--violet)}
+.step small{font-size:10px;color:var(--muted);line-height:1;margin-top:2px}
+.check{width:52px;height:50px;border-radius:12px;border:2px solid var(--line);background:none;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
+.set.done .check{background:var(--red);border-color:var(--red);color:#fff}
+.set.done .step{background:var(--red-dim)}
+.set.done .n{color:var(--red)}
+.ex-foot{display:flex;justify-content:space-between;align-items:center;gap:6px;padding-top:6px}
+.unit{display:inline-flex;background:var(--raise);border-radius:10px;padding:3px}
+.unit button{border:0;background:none;color:var(--muted);font-weight:600;font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer}
+.unit button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.x{border:0;background:none;color:var(--muted);font-size:22px;cursor:pointer;padding:6px 10px;border-radius:8px;line-height:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:none;border-radius:999px;padding:10px 16px;font-weight:600;cursor:pointer;color:var(--ink)}
+.chip:active{border-color:var(--red)}
+input.inp,select.inp{padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--raise);min-width:0;color:var(--ink)}
+
+/* Dock */
+.dock{position:fixed;left:0;right:0;bottom:0;background:rgba(0,0,0,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));z-index:20}
+.dock-in{max-width:720px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.rest{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
+.rest .t{font:30px/1 var(--display);font-variant-numeric:tabular-nums;min-width:68px}
+.rest .t.over{color:var(--good)}
+.rest .lbl{font-size:13px;color:var(--muted);line-height:1.2}
+.rest .mini{border:0;background:var(--raise);border-radius:10px;padding:8px 10px;font-size:13px;font-weight:600;cursor:pointer}
+.dock .btn{white-space:nowrap}
+
+/* Ranks */
+.ranks{display:grid;gap:10px}
+.rank-card{display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:center}
+.rank-name{font:18px/1 var(--display);letter-spacing:.02em}
+.ladder{display:flex;gap:3px;margin:8px 0 6px}
+.ladder i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.badge{border:1px dashed var(--line);border-radius:14px;padding:12px;font-size:14px;color:var(--muted)}
+.badge.on{border:1px solid rgba(157,77,255,.55);background:linear-gradient(160deg,var(--violet-dim),transparent 70%);color:var(--ink)}
+.rank-card{background:linear-gradient(100deg,color-mix(in srgb,var(--rc) 16%,transparent),transparent 50%),var(--surface)}
+.rank-card>svg{filter:drop-shadow(0 0 12px color-mix(in srgb,var(--rc) 45%,transparent))}
+.badge strong{display:block;font:18px/1.1 var(--display);margin-bottom:4px;letter-spacing:.01em}
+
+/* History */
+.chart-box{overflow-x:auto}
+.chart-box svg{display:block;width:100%;min-width:420px;height:auto}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.hist .d{font:18px/1.3 var(--display);min-width:84px}
+.hist .c{flex:1;font-size:15px}
+
+/* Dialog */
+dialog{border:1px solid var(--line);border-radius:20px;padding:26px 22px;max-width:400px;width:calc(100% - 32px);background:var(--surface);color:var(--ink);text-align:center}
+dialog::backdrop{background:rgba(0,0,0,.75)}
+.gain{display:flex;align-items:center;justify-content:center;gap:10px;font:72px/1 var(--display);margin:6px 0 2px;color:var(--violet);font-variant-numeric:tabular-nums}
+dialog{overflow-x:hidden}
+.ru{margin:-6px 0 10px}
+.ru-stage{position:relative;width:240px;height:230px;margin:0 auto}
+.ru-glow::before,.ru-ring::before{content:"";border-radius:50%}
+.ru-glow::before{width:210px;height:210px;background:radial-gradient(circle,var(--rc) 0,transparent 62%);opacity:0;animation:ru-glow .8s ease-out .85s forwards,ru-pulse 2.6s ease-in-out 1.7s infinite}
+@keyframes ru-glow{to{opacity:.38}}
+@keyframes ru-pulse{0%,100%{opacity:.38;transform:scale(1)}50%{opacity:.2;transform:scale(1.1)}}
+.ru-ring::before{width:64px;height:64px;border:3px solid var(--rc);opacity:0;animation:ru-ring .9s cubic-bezier(.2,.7,.3,1) .8s forwards}
+.ru-ring.r2::before{animation-delay:1.02s;border-color:#fff}
+@keyframes ru-ring{0%{transform:scale(.4);opacity:.95}100%{transform:scale(4.2);opacity:0;border-width:1px}}
+.ru-new svg{animation:ru-float 3.2s ease-in-out 1.7s infinite}
+@keyframes ru-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.ru-tw{position:absolute;width:var(--s);height:var(--s);margin:calc(var(--s) / -2);background:#fff;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);opacity:0;animation:ru-tw 1.8s ease-in-out infinite}
+@keyframes ru-tw{0%,100%{opacity:0;transform:scale(.3) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
+.ru-lad{display:flex;gap:4px;max-width:220px;margin:14px auto 4px;opacity:0;animation:ru-fade .4s ease-out 1.75s forwards}
+.ru-lad i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.ru-lad i.now{background:var(--c);transform-origin:left;transform:scaleX(0);animation:ru-fill .5s ease-out 2.05s forwards;box-shadow:0 0 10px var(--c)}
+@keyframes ru-fill{to{transform:scaleX(1)}}
+.ru-stage>div{position:absolute;inset:0;display:grid;place-items:center}
+.ru-old{animation:ru-shake .6s ease-in-out .1s both,ru-out .15s ease-in .7s forwards}
+@keyframes ru-shake{0%,100%{transform:none}20%{transform:translateX(-3px) rotate(-3deg)}40%{transform:translateX(4px) rotate(3deg)}60%{transform:translateX(-6px) rotate(-6deg) scale(1.05)}80%{transform:translateX(6px) rotate(6deg) scale(1.1)}}
+@keyframes ru-out{to{transform:scale(1.5);opacity:0}}
+.ru-flash{background:radial-gradient(circle,#fff 0,rgba(255,255,255,0) 55%);opacity:0;animation:ru-flash .55s ease-out .72s}
+@keyframes ru-flash{0%{opacity:0;transform:scale(.3)}30%{opacity:1}100%{opacity:0;transform:scale(1.7)}}
+.ru-new{opacity:0;animation:ru-pop .75s cubic-bezier(.2,.9,.3,1.4) .85s forwards}
+@keyframes ru-pop{0%{opacity:0;transform:scale(.2) rotate(-25deg)}60%{opacity:1;transform:scale(1.22) rotate(6deg)}100%{opacity:1;transform:none}}
+.ru-burst{opacity:0;background:repeating-conic-gradient(from 0deg,var(--rc) 0deg 5deg,transparent 5deg 24deg);-webkit-mask:radial-gradient(circle,transparent 26%,#000 30%,transparent 68%);mask:radial-gradient(circle,transparent 26%,#000 30%,transparent 68%);animation:ru-burst .6s ease-out .85s forwards,ru-spin 14s linear .85s infinite}
+@keyframes ru-burst{to{opacity:.5}}
+@keyframes ru-spin{to{transform:rotate(360deg)}}
+.ru-p{position:absolute;left:50%;top:50%;width:var(--s);height:var(--s);margin:calc(var(--s) / -2);background:var(--pc);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);opacity:0;animation:ru-p .95s cubic-bezier(.1,.7,.3,1) forwards}
+@keyframes ru-p{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.3)}}
+.ru-label{font-size:14px;color:var(--muted);opacity:0;animation:ru-fade .4s ease-out 1.3s forwards}
+.ru-name{font:68px/1.05 var(--display);background:linear-gradient(110deg,var(--rc) 35%,#fff 50%,var(--rc) 65%);background-size:300% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text;color:transparent;opacity:0;animation:ru-slam .5s cubic-bezier(.2,.9,.3,1.2) 1.35s forwards,ru-sheen 2.8s ease-in-out 2.1s infinite}
+@keyframes ru-sheen{0%{background-position:100% 0}55%,100%{background-position:0 0}}
+.ru-burst.b2{background:repeating-conic-gradient(from 12deg,var(--rc) 0deg 2deg,transparent 2deg 17deg);animation:ru-burst2 .6s ease-out .9s forwards,ru-spin 22s linear .9s infinite reverse}
+@keyframes ru-burst2{to{opacity:.3}}
+.ru.t4 .ru-burst{animation-duration:.6s,10s}
+.ru.t5 .ru-burst{animation-duration:.6s,6s}
+.ru.t5 .ru-burst.b2{animation-duration:.6s,9s}
+.ru-p.sl{width:calc(var(--s) / 3);height:calc(var(--s) * 1.7)}
+.ru.t1 .ru-burst,.ru.t1 .ru-ring.r2,.ru.t1 .ru-tw,.ru.t2 .ru-burst.b2,.ru:not(.t4):not(.t5) .ru-ring.r3{display:none}
+.ru.t1 .ru-name{animation:ru-slam .5s cubic-bezier(.2,.9,.3,1.2) 1.35s forwards}
+.ru.t1 .ru-new svg,.ru.t2 .ru-new svg{animation:none}
+.ru-ring.r3::before{animation-delay:1.2s;border-width:5px}
+.ru.t4 .ru-old svg,.ru.t5 .ru-old svg{animation:ru-charge .65s ease-in .1s both}
+@keyframes ru-charge{from{filter:brightness(1) drop-shadow(0 0 0 #fff)}to{filter:brightness(1.8) drop-shadow(0 0 16px #fff)}}
+.ru.t4,.ru.t5{animation:ru-impact .45s ease-out .74s}
+@keyframes ru-impact{0%,100%{transform:none}20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-3px,2px)}80%{transform:translate(2px,-1px)}}
+.ru-flood{position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(circle at 50% 28%,var(--rc),transparent 70%);opacity:0;z-index:0}
+.ru.t4 .ru-flood{animation:ru-flood4 1s ease-out .74s forwards}
+.ru.t5 .ru-flood{animation:ru-flood5 1.2s ease-out .74s forwards}
+@keyframes ru-flood4{30%{opacity:.45}100%{opacity:.14}}
+@keyframes ru-flood5{25%{opacity:.85}100%{opacity:.28}}
+.ru>*:not(.ru-flood):not(.ru-conf),.ru-after{position:relative;z-index:1}
+.ru-conf{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:2;border-radius:inherit}
+.ru-conf i{position:absolute;top:-16px;width:7px;height:12px;border-radius:2px;background:var(--cc);opacity:0;animation:ru-fall var(--du) linear var(--de) forwards}
+@keyframes ru-fall{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:.9;transform:translate(var(--sw),640px) rotate(var(--rt))}}
+.ru.t5 .ru-name{font-size:84px;filter:drop-shadow(0 0 14px var(--rc))}
+@keyframes ru-slam{0%{opacity:0;transform:scale(1.9);letter-spacing:.25em}100%{opacity:1;transform:none;letter-spacing:.01em}}
+.ru-ex{font-weight:600;opacity:0;animation:ru-fade .4s ease-out 1.65s forwards}
+.ru-after{opacity:0;animation:ru-fade .45s ease-out 2.25s forwards}
+@keyframes ru-fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .ru *,.ru-after{animation:none!important;opacity:1!important}
+  .ru-old,.ru-flash,.ru-ps,.ru-ring,.ru-conf{display:none!important}
+  .ru{animation:none!important}
+  .ru-glow::before{animation:none!important;opacity:.3}
+  .ru-lad i.now{transform:none}
+  .ru-name{color:var(--rc);background:none}
+  .ru-burst{opacity:.4!important}
+  .bar>i{transition:none}
+  .flame path{animation:none!important}
+}
+dialog ul{list-style:none;padding:0;margin:12px 0 18px;text-align:left;font-size:15px}
+dialog li{padding:7px 0;border-top:1px solid var(--line)}
+.status{font-size:13px;color:var(--muted);margin-top:32px;text-align:center}
+@media (max-width:520px){
+  .stat{flex-direction:column;align-items:flex-start;gap:8px;padding:12px}
+  .stat b{font-size:22px}
+  .next.sm{display:none}
+}
+@media (max-width:420px){
+  .set{grid-template-columns:18px 1fr 1fr 46px;gap:6px}
+  .step{grid-template-columns:32px 1fr 32px}
+  .check{width:46px}
+  .hero-grid{gap:6px 16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero" id="hero"></header>
+  <nav role="tablist" id="tabs">
+    <button role="tab" data-tab="training" aria-selected="true">Training</button>
+    <button role="tab" data-tab="raenge" aria-selected="false">Ränge</button>
+    <button role="tab" data-tab="verlauf" aria-selected="false">Verlauf</button>
+    <button role="tab" data-tab="profil" aria-selected="false">Profil</button>
+  </nav>
+  <main id="view"></main>
+  <p class="status" id="status">Lade Daten …</p>
+</div>
+<div class="dock" id="dock" hidden></div>
+<dialog id="dlg"></dialog>
+
+<script>
+(() => {
+const PRESETS = [
+  {id:'bank',  name:'Bankdrücken',      lower:false, std:[0.75,1.0,1.25,1.5,1.85], f:0.65},
+  {id:'squat', name:'Kniebeuge',        lower:true,  std:[1.0,1.25,1.6,2.0,2.4],   f:0.75},
+  {id:'dead',  name:'Kreuzheben',       lower:true,  std:[1.25,1.5,2.0,2.4,2.8],   f:0.75},
+  {id:'ohp',   name:'Schulterdrücken',  lower:false, std:[0.5,0.65,0.8,1.0,1.2],   f:0.65},
+  {id:'row',   name:'Langhantelrudern', lower:false, std:[0.65,0.85,1.05,1.3,1.6], f:0.65},
+  {id:'front', name:'Frontkniebeuge',   lower:true,  std:[0.75,1.0,1.25,1.5,1.85], f:0.75},
+  {id:'rdl',   name:'Rumänisches Kreuzheben', lower:true, std:[0.9,1.2,1.5,1.85,2.2], f:0.75},
+  {id:'hip',   name:'Hip Thrust',       lower:true,  std:[1.0,1.5,2.0,2.5,3.0],    f:0.85},
+  {id:'press', name:'Beinpresse',       lower:true,  std:[1.5,2.25,3.0,3.75,4.5],  f:0.8},
+  {id:'incl',  name:'Schrägbankdrücken', lower:false, std:[0.6,0.85,1.05,1.3,1.6], f:0.65},
+  {id:'lat',   name:'Breiter Latzug',   lower:false, std:[0.6,0.8,1.0,1.2,1.45],   f:0.7},
+  {id:'curl',  name:'Langhantel-Curls', lower:false, std:[0.35,0.5,0.65,0.8,1.0],  f:0.6},
+  {id:'chest', name:'Brustpresse',      lower:false, std:[0.6,0.85,1.1,1.4,1.75],  f:0.6},
+  {id:'fly',   name:'Butterfly',        lower:false, std:[0.35,0.55,0.75,1.0,1.25], f:0.6},
+  {id:'dips',  name:'Dips',             lower:false, bwx:true, std:[1.2,1.4,1.6,1.85,2.1], f:0.85},
+  {id:'pushd', name:'Pushdowns',        lower:false, std:[0.3,0.45,0.6,0.75,0.95], f:0.6},
+  {id:'lateral', name:'Seitheben',      lower:false, inc:1, std:[0.08,0.12,0.16,0.21,0.27], f:0.65},
+  {id:'hammer', name:'Hammer Curls',    lower:false, inc:2, std:[0.12,0.18,0.24,0.3,0.38], f:0.6},
+  {id:'preach', name:'Preacher Curls',  lower:false, std:[0.25,0.35,0.48,0.6,0.75], f:0.6},
+  {id:'rowc',  name:'Enges Rudern',     lower:false, std:[0.55,0.8,1.0,1.25,1.5],  f:0.7},
+  {id:'roww',  name:'Breites Rudern',   lower:false, std:[0.5,0.72,0.92,1.15,1.4], f:0.7},
+  {id:'lcurl', name:'Beinbeuger',       lower:true,  std:[0.4,0.6,0.8,1.0,1.25],   f:0.75},
+  {id:'lext',  name:'Kniestrecker',     lower:true,  std:[0.5,0.75,1.0,1.25,1.5],  f:0.75},
+  {id:'adduct', name:'Adduktoren',      lower:true,  std:[0.6,0.9,1.2,1.5,1.85],   f:0.85},
+  {id:'calf',  name:'Wadenheben',       lower:true,  std:[0.8,1.2,1.6,2.0,2.5],    f:0.85},
+];
+const PLANS = {
+  ppl: { name:'Push Pull Legs', days:[
+    { id:'push', name:'Push', ex:['chest','fly','dips','pushd','lateral','ohp'] },
+    { id:'pull', name:'Pull', ex:['hammer','preach','lat','rowc','roww'] },
+    { id:'legs', name:'Legs', ex:['lcurl','lext','adduct','squat','press','calf'] },
+  ] },
+};
+const RANKS = ['Bronze','Silber','Gold','Platin','Diamant','Elite'];
+const RCOL = i => i < 0 ? 'var(--r-none)' : `var(--r${i})`;
+const TITLES = [[1,'Neuling'],[5,'Stammgast'],[10,'Eisenfreund'],[15,'Hantel-Veteran'],[20,'Legende']];
+const CHECK = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+let state = { profile:{ bw:null, sex:'m', custom:[] }, sessions:[] };
+let draft = null;
+let tab = 'training';
+let histEx = 'bank';
+let store = null;
+let rest = null; // {end, total}
+let restTimer = null;
+let demo = null; // holds the real state while the demo runs
+let ready = false;
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => Number(n).toLocaleString('de-DE',{maximumFractionDigits:1});
+const num = v => { const n = parseFloat(String(v).replace(',','.')); return isFinite(n) ? n : null; };
+const ceil25 = x => Math.ceil(x / 2.5) * 2.5;
+const e1rm = (w, r) => r <= 0 || !w ? 0 : (r === 1 ? w : w * (1 + Math.min(r, 12) / 30));
+const LVL_STD = [5, 8, 11, 14, 17]; // machine level (with 6+ reps) for Silber..Elite
+const unitOf = id => (state.profile.units || {})[id] === 'lvl' ? 'lvl' : 'kg';
+const stufen = n => `${n} ${n === 1 ? 'Stufe' : 'Stufen'}`;
+const loadOf = (exId, w) => exById(exId)?.bwx ? (state.profile.bw || 0) + (w || 0) : w;
+const entryBest = en => en.unit === 'lvl'
+  ? Math.max(0, ...en.sets.filter(s => s.r >= 6).map(s => s.w))
+  : Math.max(0, ...en.sets.map(s => e1rm(loadOf(en.exId, s.w), s.r)));
+const activePlan = () => PLANS[state.profile.plan === undefined ? 'ppl' : state.profile.plan] || null;
+function nextDayId(plan) {
+  const last = [...state.sessions].sort((a,b) => b.date - a.date).find(s => s.day && plan.days.some(d => d.id === s.day));
+  if (!last) return plan.days[0].id;
+  const i = plan.days.findIndex(d => d.id === last.day);
+  return plan.days[(i + 1) % plan.days.length].id;
+}
+const exercises = () => [...PRESETS, ...(state.profile.custom || [])];
+const exById = id => exercises().find(e => e.id === id);
+const dayMs = 864e5;
+const weekIdx = ts => { const d = new Date(ts); d.setHours(0,0,0,0); const wd = (d.getDay() + 6) % 7; return Math.round((d.getTime() - wd*dayMs + 4*dayMs) / (7*dayMs)); };
+const dateStr = ts => new Date(ts).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'});
+const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const lsSet = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const isDone = (s, exId) => s.done && s.r > 0 && (s.w > 0 || (exById(exId)?.bwx && unitOf(exId) === 'kg' && s.w === 0));
+const doneCount = () => draft ? draft.entries.reduce((n, e) => n + e.sets.filter(s => isDone(s, e.exId)).length, 0) : 0;
+
+/* ---------- derived stats ---------- */
+function thresholds(ex) {
+  const f = state.profile.sex === 'f' ? (ex.f || 0.7) : 1;
+  return ex.std.map(t => t * f);
+}
+function rankOf(ex, best) {
+  if (unitOf(ex.id) === 'lvl') {
+    if (!best) return { idx:-1, next:null, unit:'lvl' };
+    let idx = 0;
+    LVL_STD.forEach((v, i) => { if (best >= v) idx = i + 1; });
+    return { idx, unit:'lvl', next: idx < LVL_STD.length ? { txt: stufen(LVL_STD[idx] - best) } : null };
+  }
+  const bw = state.profile.bw;
+  if (!best || !bw) return { idx:-1, next:null };
+  const t = thresholds(ex), ratio = best / bw;
+  let idx = 0;
+  t.forEach((v, i) => { if (ratio >= v) idx = i + 1; });
+  const next = idx < t.length ? { txt: `${fmt(Math.max(2.5, ceil25(t[idx]*bw - best)))} kg` } : null;
+  return { idx, ratio, next };
+}
+function derive(sessions = state.sessions) {
+  const sorted = [...sessions].sort((a,b) => a.date - b.date);
+  const best = {}, hist = {}, weeks = {};
+  let xp = 0, prs = 0, sets = 0;
+  for (const s of sorted) {
+    let sx = 100;
+    for (const en of s.entries) {
+      sx += 10 * en.sets.length; sets += en.sets.length;
+      const b = (en.unit || 'kg') === unitOf(en.exId) ? entryBest(en) : 0;
+      if (b > 0) {
+        if (best[en.exId] !== undefined && b > best[en.exId] + 0.01) { sx += 50; prs++; }
+        best[en.exId] = Math.max(best[en.exId] || 0, b);
+        (hist[en.exId] = hist[en.exId] || []).push({ date:s.date, e:b });
+      }
+    }
+    xp += sx;
+    const w = weekIdx(s.date); weeks[w] = (weeks[w] || 0) + 1;
+  }
+  let maxStreak = 0, cur = 0;
+  const wk = Object.keys(weeks).map(Number);
+  if (wk.length) {
+    for (let w = Math.min(...wk); w <= Math.max(...wk); w++) {
+      if ((weeks[w] || 0) >= 2) { cur++; xp += 25 * Math.min(cur, 4); maxStreak = Math.max(maxStreak, cur); } else cur = 0;
+    }
+  }
+  const now = weekIdx(Date.now());
+  let streak = 0, w = (weeks[now] || 0) >= 2 ? now : now - 1;
+  while ((weeks[w] || 0) >= 2) { streak++; w--; }
+  let level = 1; while (75 * (level+1) * level <= xp) level++;
+  const lo = 75 * level * (level-1), hi = 75 * (level+1) * level;
+  const title = TITLES.filter(t => level >= t[0]).pop()[1];
+  const ranks = {}; exercises().forEach(ex => ranks[ex.id] = rankOf(ex, best[ex.id]));
+  const topRank = Math.max(-1, ...Object.values(ranks).map(r => r.idx));
+  return { xp, level, lo, hi, title, best, hist, prs, sets, streak, maxStreak, ranks, topRank, count:sorted.length, thisWeek: weeks[now] || 0 };
+}
+function badges(d) {
+  return [
+    ['Erster Schritt','Erstes Training gespeichert', d.count >= 1],
+    ['Dranbleiber','10 Trainings', d.count >= 10],
+    ['Eisenhart','50 Trainings', d.count >= 50],
+    ['Neuer Rekord','Ersten persönlichen Rekord aufgestellt', d.prs >= 1],
+    ['Aufgestiegen','Silber in einer Übung erreicht', d.topRank >= 1],
+    ['Goldstandard','Gold in einer Übung erreicht', d.topRank >= 2],
+    ['Vier Wochen am Stück','4 Wochen in Folge mit je 2+ Trainings', d.maxStreak >= 4],
+    ['Satzsammler','500 Sätze insgesamt', d.sets >= 500],
+  ];
+}
+function lastEntry(exId) {
+  const u = unitOf(exId);
+  return [...state.sessions].sort((a,b) => b.date - a.date).map(s => s.entries.find(e => e.exId === exId && (e.unit || 'kg') === u)).find(Boolean);
+}
+function suggestion(exId) {
+  const ex = exById(exId), last = lastEntry(exId);
+  if (unitOf(exId) === 'lvl') {
+    if (!last || !last.sets.length) return { w:null, r:8, n:3, html:'Erstes Mal: Wähle eine <b>Stufe</b>, die du <b>8× sauber</b> schaffst.' };
+    const top = Math.max(...last.sets.map(s => s.w));
+    const minR = Math.min(...last.sets.filter(s => s.w === top).map(s => s.r));
+    const n = Math.min(Math.max(last.sets.length, 1), 6);
+    if (minR >= 10 && top < 20) return { w: top + 1, r:6, n, html:`Letztes Mal ${minR}+ Wdh. auf Stufe ${top}. <b>Heute Stufe ${top + 1}</b>, Ziel 6–8 Wdh.` };
+    if (minR >= 10) return { w: 20, r: minR + 1, n, html:`Höchste Stufe erreicht. <b>Mehr Wdh.</b> oder langsamer ausführen.` };
+    return { w: top, r: minR + 1, n, html:`Bleib auf <b>Stufe ${top}</b> und schaffe <b>${minR + 1} Wdh.</b> Bei 10 Wdh. gehst du eine Stufe hoch.` };
+  }
+  const bwx = ex && ex.bwx;
+  const kg = w => bwx ? (w > 0 ? `+${fmt(w)} kg Zusatz` : 'ohne Zusatzgewicht') : `${fmt(w)} kg`;
+  if (!last || !last.sets.length) return bwx
+    ? { w:0, r:8, n:3, html:'Erstes Mal: Starte <b>ohne Zusatzgewicht</b> und schaffe so viele saubere Wdh. wie möglich.' }
+    : { w:null, r:8, n:3, html:'Erstes Mal: Wähle ein Gewicht, das du <b>8× sauber</b> schaffst.' };
+  const top = Math.max(...last.sets.map(s => s.w));
+  const minR = Math.min(...last.sets.filter(s => s.w === top).map(s => s.r));
+  const inc = ex && ex.inc ? ex.inc : ex && ex.lower ? 5 : 2.5, n = Math.min(Math.max(last.sets.length, 1), 6);
+  if (minR >= (bwx && top === 0 ? 12 : 10)) return { w: top + inc, r:6, n, html:`Letztes Mal ${minR}+ Wdh. mit ${kg(top)}. <b>Heute ${kg(top+inc)}</b>, Ziel 6–8 Wdh.` };
+  return { w: top, r: minR + 1, n, html:`Bleib ${bwx && top === 0 ? '' : 'bei '}<b>${kg(top)}</b> und schaffe <b>${minR+1} Wdh.</b> Bei ${bwx && top === 0 ? 12 : 10} Wdh. erhöhst du.` };
+}
+function newEntry(exId) {
+  const sg = suggestion(exId);
+  return { exId, unit: unitOf(exId), sets: Array.from({ length: sg.n }, () => ({ w: sg.w, r: sg.r, done:false })) };
+}
+
+/* ---------- visuals ---------- */
+function flame(streak, size = 28) {
+  const t = streak <= 0 ? 0 : streak <= 2 ? 1 : streak <= 5 ? 2 : 3;
+  const C = [['#34343D','#24242B',''],['var(--red)','#FF8A3D',''],['var(--red)','#FF7A2E','#FFD34D'],['var(--violet)','#6C8CFF','#FFFFFF']][t];
+  return `<svg class="flame f${t}" width="${Math.round(size*.8)}" height="${size}" viewBox="0 0 32 40" aria-hidden="true">
+    <path class="fo" d="M16 2C18 9 26 13 26 24C26 32 21 38 16 38C11 38 6 32 6 24C6 18 10 15 11 9C13 13 14 15 16 16C16 11 15 6 16 2Z" style="fill:${C[0]}"/>
+    <path class="fi" d="M16 18C18 23 22 25 22 30C22 34 19 37 16 37C13 37 10 34 10 30C10 27 12.5 25 13 21.5C14 23.5 15 23 16 18Z" style="fill:${C[1]}"/>
+    ${C[2] ? `<path class="fc" d="M16 26C17 29 19 30 19 32.5C19 34.5 17.6 36 16 36C14.4 36 13 34.5 13 32.5C13 30.5 15 29.5 16 26Z" style="fill:${C[2]}"/>` : ''}
+  </svg>`;
+}
+function xpIcon(size = 22) {
+  return `<svg class="xpi" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,2 28,9 28,23 16,30 4,23 4,9" style="fill:var(--violet)"/><polygon points="16,2 28,9 16,16 4,9" style="fill:#fff;fill-opacity:.22"/><polygon points="28,9 28,23 16,30 16,16" style="fill:#000;fill-opacity:.25"/><path d="M18 6.5L10 18H15L13.5 25.5L22 13.5H17Z" style="fill:#fff"/></svg>`;
+}
+function medal(on) {
+  return `<svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true" style="display:block;margin-bottom:8px"><polygon points="16,2 28,9 28,23 16,30 4,23 4,9" style="fill:${on ? 'var(--violet)' : 'none'};stroke:${on ? 'var(--violet)' : 'var(--line)'};stroke-width:2"/>${on ? '<polygon points="16,2 28,9 16,16 4,9" style="fill:#fff;fill-opacity:.22"/><polygon points="28,9 28,23 16,30 16,16" style="fill:#000;fill-opacity:.25"/>' : ''}<polygon points="16,9 18.2,13.8 23.4,14.3 19.5,17.8 20.6,22.9 16,20.3 11.4,22.9 12.5,17.8 8.6,14.3 13.8,13.8" style="fill:${on ? '#fff' : 'var(--line)'}"/></svg>`;
+}
+const NAV_ICONS = {
+  training:'<path d="M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12"/>',
+  raenge:'<path d="M8 4h8l4 5-8 11L4 9zM4 9h16"/>',
+  verlauf:'<path d="M4 19h16M5 15l4-4 4 3 6-7"/>',
+  profil:'<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+};
+/* Rank crystal: shape and shine grow with the rank */
+function disc(idx, size = 56) {
+  const c = RCOL(idx);
+  const F = d => `<path d="${d}" style="fill:${c}"/>`;
+  const W = (d, o) => `<path d="${d}" style="fill:#fff;fill-opacity:${o}"/>`;
+  const B = (d, o) => `<path d="${d}" style="fill:#000;fill-opacity:${o}"/>`;
+  const spark = (x, y, s = 1, o = 1) => `<path transform="translate(${x} ${y}) scale(${s})" d="M0 -5.5l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z" style="fill:#fff;fill-opacity:${o}"/>`;
+  const rhombus = F('M0 -22L16 0L0 22L-16 0Z') + W('M0 -22L-16 0H0Z', .3) + W('M0 -22L16 0H0Z', .1) + B('M-16 0L0 22V0Z', .1) + B('M16 0L0 22V0Z', .32);
+  const cutS = F('M-12 -16H12L20 -5L0 22L-20 -5Z') + W('M-12 -16H12L6 -5H-6Z', .4) + W('M-12 -16L-20 -5H-6Z', .2) + B('M-6 -5H6L0 22Z', .12) + B('M6 -5H20L0 22Z', .3) + B('M12 -16L20 -5H6Z', .12);
+  const cutL = F('M-14 -18H14L24 -6L0 24L-24 -6Z') + W('M-14 -18H14L7 -6H-7Z', .42) + W('M-14 -18L-24 -6H-7Z', .2) + B('M-7 -6H7L0 24Z', .12) + B('M7 -6H24L0 24Z', .3) + B('M14 -18L24 -6H7Z', .12);
+  let g;
+  if (idx < 0) g = `<path d="M0 -22L16 0L0 22L-16 0Z" style="fill:none;stroke:${c};stroke-width:2.5;stroke-dasharray:4 4"/>`;
+  else if (idx === 0) g = rhombus;
+  else if (idx === 1) g = rhombus + spark(-9, -16.5);
+  else if (idx === 2) g = cutS + spark(-13, -16.5);
+  else if (idx === 3) g = F('M-31 -8L-27 -2L-31 4L-35 -2Z M31 -8L35 -2L31 4L27 -2Z') + W('M-31 -8L-35 -2H-31Z M31 -8L27 -2H31Z', .35) + cutS + spark(-13, -16.5);
+  else if (idx === 4) g = F('M-34 -14L-30 -8L-34 -2L-38 -8Z M34 -14L38 -8L34 -2L30 -8Z M-28 10L-25 14L-28 18L-31 14Z M28 10L31 14L28 18L25 14Z') + cutL + spark(-14, -18, 1.35) + spark(15, 11.5, .7, .8);
+  else g = `<circle r="33" style="fill:none;stroke:${c};stroke-opacity:.35;stroke-width:1.5"/><path d="M0 -36V-44M-25 -25L-30 -30M25 -25L30 -30M-36 0H-44M36 0H44" style="fill:none;stroke:${c};stroke-width:2.5;stroke-linecap:round"/>` + cutL + spark(-14, -19, 1.35) + spark(16, 9.5, .7);
+  return `<svg width="${size}" height="${size}" viewBox="-48 -48 96 96" aria-hidden="true">${g}</svg>`;
+}
+function ladder(idx) {
+  return `<div class="ladder" aria-hidden="true">${RANKS.map((_, i) => `<i style="background:${i <= idx ? RCOL(i) : ''}"></i>`).join('')}</div>`;
+}
+function chart(ex, pts) {
+  if (!pts || pts.length < 2) return `<p class="small" style="margin:0">Sobald du diese Übung zweimal trainiert hast, erscheint hier deine Kurve.</p>`;
+  const W = 640, H = 260, P = { l:46, r:16, t:16, b:30 };
+  const bw = state.profile.bw;
+  const lvl = unitOf(ex.id) === 'lvl';
+  const lines = lvl ? LVL_STD.map((v, i) => ({ v, i:i+1 })) : bw ? thresholds(ex).map((t, i) => ({ v:t*bw, i:i+1 })) : [];
+  const vals = pts.map(p => p.e);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  lines.filter(l => l.v > hi).slice(0,1).forEach(l => hi = Math.max(hi, l.v));
+  const pad = (hi - lo) * 0.12 || 5; lo = Math.max(0, lo - pad); hi += pad;
+  const x = i => P.l + i * (W - P.l - P.r) / (pts.length - 1);
+  const y = v => H - P.b - (v - lo) / (hi - lo) * (H - P.t - P.b);
+  const shown = lines.filter(l => l.v >= lo && l.v <= hi);
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Geschätztes Maximalgewicht für ${esc(ex.name)} über Zeit">
+    ${[lo, (lo+hi)/2, hi].map(v => `<text x="${P.l-8}" y="${y(v)+4}" text-anchor="end" font-size="12" fill="var(--muted)">${Math.round(v)}</text><line x1="${P.l}" x2="${W-P.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/>`).join('')}
+    ${shown.map(l => `<line x1="${P.l}" x2="${W-P.r}" y1="${y(l.v)}" y2="${y(l.v)}" stroke="${RCOL(l.i)}" stroke-width="2" stroke-dasharray="6 5"/><text x="${W-P.r}" y="${y(l.v)-6}" text-anchor="end" font-size="12" font-weight="600" fill="${RCOL(l.i)}">${RANKS[l.i]}</text>`).join('')}
+    <polyline points="${pts.map((p,i) => `${x(i)},${y(p.e)}`).join(' ')}" fill="none" stroke="var(--red)" stroke-width="3" stroke-linejoin="round"/>
+    ${pts.map((p,i) => `<circle cx="${x(i)}" cy="${y(p.e)}" r="4.5" fill="var(--bg)" stroke="var(--red)" stroke-width="2.5"><title>${dateStr(p.date)}: ${lvl ? 'Stufe ' + p.e : fmt(p.e) + ' kg'}</title></circle>`).join('')}
+    <text x="${P.l}" y="${H-8}" font-size="12" fill="var(--muted)">${dateStr(pts[0].date)}</text>
+    <text x="${W-P.r}" y="${H-8}" text-anchor="end" font-size="12" fill="var(--muted)">${dateStr(pts[pts.length-1].date)}</text>
+  </svg>`;
+}
+
+/* ---------- rendering ---------- */
+function renderHero(d) {
+  const pct = Math.min(100, (d.xp - d.lo) / (d.hi - d.lo) * 100);
+  const bar = `<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}" aria-label="Fortschritt zum nächsten Level"><i style="width:${pct}%"></i></div>`;
+  const h = $('#hero');
+  if (draft && tab === 'training') {
+    h.className = 'hero slim';
+    h.innerHTML = `<div class="slimrow"><span class="lv">Lv ${d.level}</span>${bar}<span>${xpIcon(16)}${fmt(d.hi - d.xp)}</span><span>${flame(d.streak, 20)}${d.streak}</span></div>`;
+    return;
+  }
+  h.className = 'hero';
+  h.innerHTML = `
+    <div class="brand"><span>Kraftstufe</span><span class="tot">${xpIcon(16)}${fmt(d.xp)} XP gesamt</span></div>
+    <div class="hero-grid">
+      <div class="lvl"><small>Level</small>${d.level}</div>
+      <div>
+        <div class="lvl-title">${d.title}</div>
+        ${bar}
+        <div class="meta"><span><b>${fmt(d.xp - d.lo)}</b> / ${fmt(d.hi - d.lo)} XP</span></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat">${flame(d.streak, 34)}<div><b>${d.streak}</b><span>${d.streak === 1 ? 'Woche' : 'Wochen'} Serie</span></div></div>
+      <div class="stat">${xpIcon(32)}<div><b>${fmt(d.hi - d.xp)}</b><span>XP bis Level ${d.level+1}</span></div></div>
+      <div class="stat"><span class="dots">${[0,1].map(i => `<i class="${d.thisWeek > i ? 'on' : ''}"></i>`).join('')}</span><div><b>${Math.min(d.thisWeek, 2)}/2</b><span>Trainings diese Woche</span></div></div>
+    </div>`;
+}
+function setRow(ei, si, s) {
+  const lvl = draft.entries[ei].unit === 'lvl';
+  const bwx = !lvl && exById(draft.entries[ei].exId)?.bwx;
+  return `<div class="set ${s.done ? 'done' : ''}">
+    <span class="n">${si+1}</span>
+    <div class="step">
+      <button data-act="step" data-ei="${ei}" data-si="${si}" data-k="w" data-d="-1" aria-label="Gewicht verringern">−</button>
+      <label><input inputmode="${lvl ? 'numeric' : 'decimal'}" aria-label="${lvl ? 'Stufe' : 'Gewicht'} Satz ${si+1}${lvl ? '' : ' in kg'}" data-ei="${ei}" data-si="${si}" data-k="w" value="${s.w ?? ''}" placeholder="–"><small>${lvl ? 'Stufe' : bwx ? 'kg extra' : 'kg'}</small></label>
+      <button data-act="step" data-ei="${ei}" data-si="${si}" data-k="w" data-d="1" aria-label="Gewicht erhöhen">+</button>
+    </div>
+    <div class="step">
+      <button data-act="step" data-ei="${ei}" data-si="${si}" data-k="r" data-d="-1" aria-label="Wiederholungen verringern">−</button>
+      <label><input inputmode="numeric" aria-label="Wiederholungen Satz ${si+1}" data-ei="${ei}" data-si="${si}" data-k="r" value="${s.r ?? ''}" placeholder="–"><small>Wdh.</small></label>
+      <button data-act="step" data-ei="${ei}" data-si="${si}" data-k="r" data-d="1" aria-label="Wiederholungen erhöhen">+</button>
+    </div>
+    <button class="check" data-act="done" data-ei="${ei}" data-si="${si}" aria-pressed="${!!s.done}" aria-label="Satz ${si+1} erledigt">${CHECK}</button>
+  </div>`;
+}
+function renderTraining(d) {
+  let h = '';
+  if (!state.profile.bw) h += `<div class="notice">Trag im Profil dein Körpergewicht ein, damit deine Ränge berechnet werden. <button class="btn quiet" data-go="profil">Zum Profil</button></div>`;
+  if (!draft) {
+    const last = [...state.sessions].sort((a,b) => b.date - a.date)[0];
+    const plan = activePlan();
+    const left = Math.max(0, 2 - d.thisWeek);
+    const mHead = left === 0 ? 'Wochenziel geschafft' : `Noch ${left} ${left === 1 ? 'Training' : 'Trainings'} diese Woche`;
+    const mSub = left === 0 ? `Deine Serie steht bei ${d.streak} ${d.streak === 1 ? 'Woche' : 'Wochen'}. Jedes weitere Training bringt trotzdem XP.` : d.streak > 0 ? `Dann wächst deine Serie auf ${d.streak + 1} Wochen.` : 'Damit zündest du deine erste Serie.';
+    h += `<h2>Bereit?</h2>
+      <div class="panel motiv">${flame(left === 0 ? Math.max(d.streak, 1) : d.streak, 44)}<div><b>${mHead}</b><span class="small">${mSub}</span></div></div>
+      <p class="lead" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${xpIcon(18)} 100 XP pro Training, 10 pro Satz, 50 pro Rekord.</p>
+      <div class="start">
+        ${plan ? (() => { const nid = nextDayId(plan); return [...plan.days].sort((a, b) => (b.id === nid) - (a.id === nid)).map(dy => `<button class="btn ${dy.id === nid ? 'day-next' : 'ghost'}" data-act="startDay" data-day="${dy.id}">${dy.id === nid ? `<em>Als Nächstes in deinem Plan</em>` : ''}${dy.name}<span>${dy.ex.map(id => esc(exById(id)?.name || '')).join(', ')}</span></button>`).join(''); })() : ''}
+        ${last ? `<button class="btn ${plan ? 'ghost' : ''}" data-act="repeat">Wie letztes Mal<span>${last.entries.map(e => esc(exById(e.exId)?.name || 'Übung')).join(', ')} mit neuen Zielen</span></button>` : ''}
+        <button class="btn ${last || plan ? 'ghost' : ''}" data-act="start">Freies Training<span>Übungen selbst auswählen</span></button>
+      </div>`;
+    return h;
+  }
+  const used = new Set(draft.entries.map(e => e.exId));
+  const dayName = draft.day && Object.values(PLANS).flatMap(p => p.days).find(x => x.id === draft.day)?.name;
+  if (dayName) h += `<h2 style="margin-bottom:14px">${dayName}-Tag</h2>`;
+  h += `<div class="stack">`;
+  draft.entries.forEach((en, ei) => {
+    const ex = exById(en.exId); if (!ex) return;
+    const r = d.ranks[en.exId] || { idx:-1 };
+    h += `<section class="ex">
+      <div class="ex-head">${disc(r.idx, 30)}<h3>${esc(ex.name)}</h3>${r.next ? `<span class="next sm">noch ${r.next.txt} bis ${RANKS[r.idx+1]}</span>` : ''}<button class="x" data-act="rmEx" data-ei="${ei}" aria-label="${esc(ex.name)} entfernen">×</button></div>
+      <p class="tip">${suggestion(en.exId).html}</p>
+      ${en.sets.map((s, si) => setRow(ei, si, s)).join('')}
+      <div class="ex-foot">
+        <button class="btn quiet" data-act="addSet" data-ei="${ei}">+ Satz</button>
+        <div class="unit" role="group" aria-label="Einheit">${[['kg','kg'],['lvl','Stufe']].map(([u, l]) => `<button data-act="unit" data-ei="${ei}" data-u="${u}" aria-pressed="${(en.unit || 'kg') === u}">${l}</button>`).join('')}</div>
+        ${en.sets.length ? `<button class="btn quiet" data-act="rmSet" data-ei="${ei}" data-si="${en.sets.length-1}">Letzten Satz entfernen</button>` : ''}
+      </div>
+    </section>`;
+  });
+  const avail = exercises().filter(e => !used.has(e.id));
+  if (avail.length) h += `<div><p class="small" style="margin:18px 0 8px">${draft.entries.length ? 'Weitere Übung' : 'Wähle deine erste Übung'}</p><div class="chips">${avail.map(e => `<button class="chip" data-act="addEx" data-id="${e.id}">${esc(e.name)}</button>`).join('')}</div></div>`;
+  h += `<div style="margin-top:28px"><button class="btn danger" data-act="discard">Training verwerfen</button></div></div>`;
+  return h;
+}
+function renderRanks(d) {
+  let h = `<h2>Deine Ränge</h2><p class="lead">Jede Übung hat ihren eigenen Rang, berechnet aus deinem geschätzten Maximalgewicht im Verhältnis zum Körpergewicht.</p><div class="panel" style="margin:0 0 18px"><div class="small" style="margin-bottom:10px">Aufstiegs-Animationen ansehen</div><div class="chips">${RANKS.slice(1).map((r, i) => `<button class="chip" data-act="previewRank" data-to="${i + 1}" style="border-color:${RCOL(i + 1)};color:${RCOL(i + 1)}">${r}</button>`).join('')}<button class="chip" data-act="previewRank" data-to="1" data-auto="1">Alle nacheinander</button></div></div><div class="ranks">`;
+  const plan = activePlan();
+  const groups = plan ? plan.days.map(dy => [dy.name, dy.ex.map(exById).filter(Boolean)]) : [];
+  const inPlan = new Set(groups.flatMap(g => g[1].map(e => e.id)));
+  const others = exercises().filter(e => !inPlan.has(e.id));
+  if (others.length) groups.push([plan ? 'Weitere Übungen' : '', others]);
+  groups.forEach(([title, list]) => {
+    const shown = list.filter(ex => !demo || d.best[ex.id]);
+    if (!shown.length) return;
+    if (title) h += `<h3 class="grp">${title}</h3>`;
+    shown.forEach(ex => {
+    const r = d.ranks[ex.id], b = d.best[ex.id];
+    let info;
+    const nextPill = r.next ? `<br><span class="next">${disc(r.idx+1, 18)}Noch <b>${r.next.txt}</b> bis ${RANKS[r.idx+1]}</span>` : '<br><span class="next">Höchster Rang erreicht</span>';
+    if (!b) info = unitOf(ex.id) === 'lvl' ? 'Noch nicht trainiert (Einheit: Stufen)' : 'Noch nicht trainiert';
+    else if (r.unit === 'lvl') info = `Beste Stufe ${b} mit mindestens 6 Wdh.` + nextPill;
+    else if (!state.profile.bw) info = `Bestwert ${fmt(b)} kg, Körpergewicht fehlt`;
+    else info = `Geschätztes Maximum ${fmt(b)} kg (${fmt(r.ratio)}× Körpergewicht)` + nextPill;
+    h += `<div class="panel rank-card" style="--rc:${RCOL(r.idx)}">${disc(r.idx, 60)}<div>
+      <div class="row" style="justify-content:space-between"><h3>${esc(ex.name)}</h3><span class="rank-name" style="color:${RCOL(r.idx)}">${r.idx < 0 ? 'Unrangiert' : RANKS[r.idx]}</span></div>
+      ${ladder(r.idx)}<div class="small">${info}</div></div></div>`;
+    });
+  });
+  const bs = badges(d);
+  h += `</div><h2 style="margin-top:36px">Abzeichen</h2><p class="lead">${bs.filter(b => b[2]).length} von ${bs.length} freigeschaltet.</p><div class="badges">`;
+  h += bs.map(([t, s, on]) => `<div class="badge ${on ? 'on' : ''}">${medal(on)}<strong>${t}</strong>${s}</div>`).join('');
+  return h + '</div>';
+}
+function renderHistory(d) {
+  const ex = exById(histEx) || PRESETS[0];
+  let h = `<h2>Verlauf</h2><p class="lead">Die gestrichelten Linien zeigen die nächsten Ränge. So siehst du, wie nah du dran bist.</p>
+    <div class="chips" style="margin-bottom:14px">${exercises().map(e => `<button class="chip" data-act="hist" data-id="${e.id}" style="${e.id === ex.id ? 'border-color:var(--red);color:var(--red)' : ''}" aria-pressed="${e.id === ex.id}">${esc(e.name)}</button>`).join('')}</div>
+    <div class="panel chart-box">${chart(ex, d.hist[ex.id])}</div>
+    <h3 style="margin:30px 0 8px">Alle Trainings</h3>`;
+  const list = [...state.sessions].sort((a,b) => b.date - a.date);
+  if (!list.length) return h + `<p class="small">Noch keine Trainings gespeichert. Starte dein erstes im Tab Training.</p>`;
+  return h + `<ul class="hist">${list.map(s => `<li><span class="d">${dateStr(s.date)}</span><span class="c">${s.entries.map(en => `${esc(exById(en.exId)?.name || 'Übung')}: ${en.sets.map(x => en.unit === 'lvl' ? `Stufe ${x.w}×${x.r}` : `${fmt(x.w)}×${x.r}`).join(', ')}`).join('<br>')}</span><button class="x" data-act="delSession" data-id="${s.id}" aria-label="Training vom ${dateStr(s.date)} löschen">×</button></li>`).join('')}</ul>`;
+}
+function renderProfile() {
+  const p = state.profile;
+  return `<h2>Profil</h2><p class="lead">Diese Angaben bestimmen, ab welchem Gewicht du in welchen Rang aufsteigst.</p>
+    <div class="panel stack">
+      <label class="row"><span style="min-width:140px">Körpergewicht (kg)</span><input class="inp" id="bw" inputmode="decimal" value="${p.bw ?? ''}" placeholder="z. B. 78"></label>
+      <label class="row"><span style="min-width:140px">Rangtabelle</span><select class="inp" id="sex"><option value="m" ${p.sex==='m'?'selected':''}>Männer</option><option value="f" ${p.sex==='f'?'selected':''}>Frauen</option></select></label>
+      <label class="row"><span style="min-width:140px">Trainingsplan</span><select class="inp" id="plan"><option value="ppl" ${activePlan() ? 'selected' : ''}>Push Pull Legs</option><option value="" ${activePlan() ? '' : 'selected'}>Kein Plan</option></select></label>
+      <p class="small" id="bwErr" style="color:var(--red);margin:0" aria-live="polite"></p>
+      <button class="btn" data-act="saveProfile">Profil speichern</button>
+    </div>
+    <h3 style="margin:30px 0 10px">Eigene Übung hinzufügen</h3>
+    <div class="panel row">
+      <input class="inp" id="cName" placeholder="z. B. Beinpresse" style="flex:1;min-width:160px" maxlength="40">
+      <select class="inp" id="cLower" aria-label="Körperbereich"><option value="0">Oberkörper (+2,5 kg)</option><option value="1">Unterkörper (+5 kg)</option></select>
+      <button class="btn ghost" data-act="addCustom">Hinzufügen</button>
+    </div>
+    ${(p.custom||[]).length ? `<ul class="hist" style="margin-top:10px">${p.custom.map(c => `<li><span class="c">${esc(c.name)}</span><button class="x" data-act="rmCustom" data-id="${c.id}" aria-label="${esc(c.name)} entfernen">×</button></li>`).join('')}</ul>` : ''}
+    <p class="small" style="margin-top:12px">Eigene Übungen nutzen eine allgemeine Rangtabelle (0,5× bis 1,5× Körpergewicht).</p>
+    <h3 style="margin:30px 0 10px">Datensicherung</h3>
+    <div class="panel"><p class="small" style="margin:0 0 12px">Deine Trainings liegen nur auf diesem Gerät. Exportiere sie regelmäßig, zum Beispiel in die Dateien-App, damit nichts verloren geht.</p>
+    <div class="row"><button class="btn ghost" data-act="exportData">Daten exportieren</button><button class="btn ghost" data-act="importData">Daten importieren</button></div>
+    <input type="file" id="importFile" accept="application/json,.json" hidden>
+    <p class="small" id="ioMsg" style="margin:10px 0 0" aria-live="polite"></p></div>
+    <h3 style="margin:30px 0 10px">Demo</h3>
+    <div class="panel"><p class="small" style="margin:0 0 12px">Lädt 8 Wochen Beispieltrainings mit sechs Übungen, je eine pro Rang von Bronze bis Elite. Deine echten Daten bleiben unangetastet.</p>
+    <button class="btn ghost" data-act="${demo ? 'demoOff' : 'demoOn'}">${demo ? 'Demo beenden' : 'Demo starten'}</button></div>`;
+}
+function fmtTime(s) { const a = Math.abs(s); return `${s < 0 ? '+' : ''}${Math.floor(a/60)}:${String(a%60).padStart(2,'0')}`; }
+function renderDock() {
+  const dock = $('#dock');
+  const show = !!draft && tab === 'training';
+  dock.hidden = !show; document.body.classList.toggle('training', show);
+  if (!show) return;
+  const n = doneCount();
+  let restHtml = '<div class="rest"><span class="lbl">Hake erledigte Sätze ab,<br>die Pause startet automatisch.</span></div>';
+  if (rest) {
+    const left = Math.ceil((rest.end - Date.now()) / 1000);
+    restHtml = `<div class="rest"><span class="t ${left <= 0 ? 'over' : ''}" id="restT" aria-live="off">${fmtTime(left > 0 ? left : -left)}</span>
+      <span class="lbl" id="restL">${left > 0 ? 'Pause' : 'Los geht’s'}</span>
+      <button class="mini" data-act="rest30">+30 s</button><button class="mini" data-act="restStop">Ende</button></div>`;
+  }
+  dock.innerHTML = `<div class="dock-in">${restHtml}<button class="btn" data-act="save" ${n ? '' : 'disabled'}>Speichern${n ? ` (${n})` : ''}</button></div>`;
+}
+function tickRest() {
+  if (!rest) return;
+  const left = Math.ceil((rest.end - Date.now()) / 1000);
+  const t = $('#restT'), l = $('#restL');
+  if (!t) return;
+  t.textContent = fmtTime(left > 0 ? left : -left);
+  if (left <= 0 && !rest.buzzed) { rest.buzzed = true; t.classList.add('over'); l.textContent = 'Los geht’s'; try { navigator.vibrate && navigator.vibrate([200,100,200]); } catch {} }
+}
+function startRest(sec) {
+  rest = { end: Date.now() + sec * 1000 };
+  clearInterval(restTimer); restTimer = setInterval(tickRest, 250);
+}
+function stopRest() { rest = null; clearInterval(restTimer); }
+function render() {
+  const d = derive();
+  renderHero(d);
+  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
+  const banner = demo ? `<div class="notice" style="border-color:var(--violet)">Demo-Modus: Beispieldaten, nichts wird gespeichert. <button class="btn quiet" data-act="demoOff">Demo beenden</button></div>` : '';
+  $('#view').innerHTML = banner + (tab === 'training' ? renderTraining(d) : tab === 'raenge' ? renderRanks(d) : tab === 'verlauf' ? renderHistory(d) : renderProfile());
+  renderDock();
+}
+
+/* ---------- actions ---------- */
+function persistDraft() { if (!demo) lsSet('kraftstufe-draft', draft); }
+function genDemo() {
+  const profile = { bw: state.profile.bw || 80, sex: state.profile.sex || 'm', custom: [] };
+  const exs = PRESETS.slice(0, RANKS.length), n = exs.length, N = 16, now = Date.now();
+  const target = exs.map((ex, i) => {
+    const k = Math.floor(i * RANKS.length / n);
+    const t = ex.std.map(v => v * (profile.sex === 'f' ? ex.f : 1) * profile.bw);
+    const lo = k === 0 ? t[0] * 0.7 : t[k-1], hi = k >= t.length ? t[t.length-1] * 1.15 : t[k];
+    return (lo + hi) / 2;
+  });
+  const sessions = [];
+  for (let s = 0; s < N; s++) {
+    const p = Math.min(1, 0.85 + 0.15 * s / (N - 2));
+    const entries = exs.map((ex, i) => ({ ex, i })).filter(o => o.i % 2 === s % 2).map(({ ex, i }) => {
+      const w = Math.max(2.5, ceil25(target[i] * p / (1 + 8/30)));
+      return { exId: ex.id, sets: [{ w, r:8 }, { w, r:8 }, { w, r:7 }] };
+    });
+    sessions.push({ id: 'demo' + s, date: Math.round(now - (N - s) * 3.5 * dayMs), entries });
+  }
+  return { profile, sessions };
+}
+let pendingConfirm = null;
+function askConfirm(text, label, fn) {
+  pendingConfirm = fn; const dl = $('#dlg');
+  dl.innerHTML = `<h3 style="margin-bottom:18px;font-size:24px">${text}</h3><div class="row" style="justify-content:center"><button class="btn danger" data-act="okDlg">${label}</button><button class="btn ghost" data-act="closeDlg" autofocus>Abbrechen</button></div>`;
+  dl.showModal();
+}
+function rankUpHTML(oldIdx, newIdx, name) {
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const parts = (n, color, delay, dist, size, sliver) => Array.from({ length:n }, () => {
+    const a = rnd(0, Math.PI * 2), d = dist * rnd(.6, 1.15), s = size * rnd(.6, 1.25);
+    return `<i class="ru-p${sliver && Math.random() < .5 ? ' sl' : ''}" style="--pc:${color};--dx:${(Math.cos(a)*d).toFixed(1)}px;--dy:${(Math.sin(a)*d).toFixed(1)}px;--rot:${Math.round(rnd(-300, 300))}deg;--s:${s.toFixed(1)}px;animation-delay:${(delay + rnd(0, .1)).toFixed(2)}s"></i>`;
+  }).join('');
+  const nTw = 2 + newIdx * 2;
+  const tw = Array.from({ length:nTw }, (_, i) => {
+    const a = i / nTw * Math.PI * 2 + rnd(-.3, .3), d = rnd(62, 98);
+    return `<i class="ru-tw" style="left:calc(50% + ${(Math.cos(a)*d).toFixed(1)}px);top:calc(50% + ${(Math.sin(a)*d).toFixed(1)}px);--s:${rnd(7, 14).toFixed(1)}px;animation-delay:${(1.5 + rnd(0, 1.8)).toFixed(2)}s"></i>`;
+  }).join('');
+  const lad = RANKS.map((_, i) => `<i class="${i === newIdx ? 'now' : ''}" style="--c:${RCOL(i)};${i < newIdx ? 'background:var(--c)' : ''}"></i>`).join('');
+  const conf = newIdx === 5 ? Array.from({ length:44 }, () => `<i style="left:${rnd(0, 100).toFixed(1)}%;--cc:${Math.random() < .2 ? '#fff' : RCOL(Math.floor(rnd(0, 6)))};--du:${rnd(2.2, 3.6).toFixed(2)}s;--de:${rnd(1, 2.8).toFixed(2)}s;--sw:${Math.round(rnd(-70, 70))}px;--rt:${Math.round(rnd(-720, 720))}deg"></i>`).join('') : '';
+  return `<div class="ru t${newIdx}" style="--rc:${RCOL(newIdx)}"><div class="ru-flood"></div>${conf ? `<div class="ru-conf">${conf}</div>` : ''}<div class="ru-stage">
+    <div class="ru-glow"></div><div class="ru-burst"></div><div class="ru-burst b2"></div>
+    <div class="ru-ring"></div><div class="ru-ring r2"></div><div class="ru-ring r3"></div>
+    <div class="ru-old">${disc(oldIdx, 116)}</div><div class="ru-flash"></div><div class="ru-new">${disc(newIdx, 136)}</div>
+    <div class="ru-ps">${parts(6 + newIdx * 5, RCOL(oldIdx), .72, 100 + newIdx * 6, 11, true)}${parts(4 + newIdx * 3, '#fff', .95, 85 + newIdx * 5, 6)}${tw}</div></div>
+    <div class="ru-label">Neuer Rang erreicht</div><div class="ru-name">${RANKS[newIdx]}</div><div class="ru-ex">${esc(name)}</div>
+    <div class="ru-lad" aria-hidden="true">${lad}</div></div>`;
+}
+let previewTimer = null;
+function showDialog(html, pre = '', buttons = '') {
+  const dl = $('#dlg');
+  clearTimeout(previewTimer);
+  dl.innerHTML = pre + `<div class="${pre ? 'ru-after' : ''}">${html}${buttons || '<button class="btn block" data-act="closeDlg" autofocus>Weiter</button>'}</div>`;
+  if (!dl.open) dl.showModal();
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) dl.querySelectorAll('.count').forEach(el => {
+    const to = +el.dataset.to, t0 = performance.now() + (pre ? 2300 : 200);
+    el.textContent = '+0';
+    const step = now => { const p = Math.min(1, Math.max(0, (now - t0) / 1000)); el.textContent = '+' + Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1 && dl.open) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+  const m = pre.match(/ru t(\d)/);
+  if (m) { const t = +m[1]; setTimeout(() => { try { navigator.vibrate && navigator.vibrate(t >= 5 ? [60,30,60,30,60,30,320] : t >= 3 ? [40,30,40,30,180] : [30,20,120]); } catch {} }, 850); }
+}
+function preview(to, auto) {
+  const next = to < 5
+    ? `<button class="btn" data-act="previewRank" data-to="${to + 1}"${auto ? ' data-auto="1"' : ''}>Nächster Rang</button>`
+    : `<button class="btn" data-act="previewRank" data-to="1">Von vorn</button>`;
+  showDialog(`<p class="small" style="margin:4px 0 16px">Vorschau, Stufe ${to} von 5${auto && to < 5 ? '. Geht gleich automatisch weiter.' : ''}</p>`,
+    rankUpHTML(to - 1, to, `${RANKS[to - 1]} → ${RANKS[to]}`),
+    `<div class="row" style="justify-content:center">${next}<button class="btn ghost" data-act="closeDlg">Schließen</button></div>`);
+  if (auto && to < 5) previewTimer = setTimeout(() => { if ($('#dlg').open) preview(to + 1, true); }, 5200);
+}
+function saveDraft() {
+  const entries = draft.entries.map(e => ({ exId:e.exId, ...(e.unit === 'lvl' ? { unit:'lvl' } : {}), sets:e.sets.filter(s => isDone(s, e.exId)).map(s => ({ w:+s.w, r:Math.round(+s.r) })) })).filter(e => e.sets.length);
+  if (!entries.length) return;
+  const before = derive();
+  const session = { id:'s' + Date.now(), date:draft.date, entries, ...(draft.day ? { day:draft.day } : {}) };
+  state.sessions.push(session);
+  const after = derive();
+  draft = null; persistDraft(); stopRest();
+  const prs = entries.filter(e => (e.unit || 'kg') === unitOf(e.exId) && before.best[e.exId] !== undefined && entryBest(e) > before.best[e.exId] + 0.01);
+  const ups = exercises().filter(ex => after.ranks[ex.id].idx > before.ranks[ex.id].idx && after.ranks[ex.id].idx > 0).sort((x, y) => after.ranks[y.id].idx - after.ranks[x.id].idx);
+  const bA = badges(after), bB = badges(before);
+  const newBadges = bA.filter((b, i) => b[2] && !bB[i][2]);
+  let html = `<div class="small">Training gespeichert</div><div class="gain">${xpIcon(54)}<span class="count" data-to="${after.xp - before.xp}">+${after.xp - before.xp}</span></div><div class="small">XP verdient</div>`;
+  if (after.streak > before.streak) html += `<div class="streakup">${flame(after.streak, 26)}Serie: ${after.streak} ${after.streak === 1 ? 'Woche' : 'Wochen'}</div>`;
+  if (after.level > before.level) html += `<h3 style="font-size:26px">Level ${after.level} erreicht</h3>`;
+  const pre = ups.length ? rankUpHTML(before.ranks[ups[0].id].idx, after.ranks[ups[0].id].idx, ups[0].name) : '';
+  const items = [...prs.map(e => `Neuer Rekord in ${esc(exById(e.exId).name)}: ${e.unit === 'lvl' ? 'Stufe ' + entryBest(e) : fmt(entryBest(e)) + ' kg geschätzt'}`), ...ups.slice(1).map(ex => `${esc(ex.name)} aufgestiegen zu ${RANKS[after.ranks[ex.id].idx]}`), ...newBadges.map(b => `Abzeichen freigeschaltet: ${b[0]}`)];
+  html += items.length ? `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>` : '<p class="small" style="margin:12px 0 18px">Weiter so. Beständigkeit schlägt alles.</p>';
+  render(); showDialog(html, pre);
+  store.saveSession(session);
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act],[data-tab],[data-go]'); if (!t) return;
+  if (t.dataset.tab || t.dataset.go) { tab = t.dataset.tab || t.dataset.go; render(); return; }
+  const a = t.dataset.act, ei = +t.dataset.ei, si = +t.dataset.si;
+  if (a === 'start') draft = { date:Date.now(), entries:[] };
+  else if (a === 'unit') {
+    const en = draft.entries[ei], u = t.dataset.u;
+    if ((en.unit || 'kg') === u) return;
+    const units = { ...(state.profile.units || {}) };
+    if (u === 'lvl') units[en.exId] = 'lvl'; else delete units[en.exId];
+    state.profile.units = units; store.saveProfile();
+    draft.entries[ei] = newEntry(en.exId);
+  }
+  else if (a === 'startDay') {
+    const dy = activePlan()?.days.find(x => x.id === t.dataset.day); if (!dy) return;
+    draft = { date:Date.now(), day:dy.id, entries: dy.ex.filter(id => exById(id)).map(newEntry) };
+  }
+  else if (a === 'repeat') { const last = [...state.sessions].sort((x,y) => y.date - x.date)[0]; draft = { date:Date.now(), entries: last.entries.filter(en => exById(en.exId)).map(en => newEntry(en.exId)) }; }
+  else if (a === 'addEx') draft.entries.push(newEntry(t.dataset.id));
+  else if (a === 'rmEx') draft.entries.splice(ei, 1);
+  else if (a === 'addSet') { const s = draft.entries[ei].sets, prev = s[s.length-1], sg = suggestion(draft.entries[ei].exId); s.push({ w: prev ? prev.w : sg.w, r: prev ? prev.r : sg.r, done:false }); }
+  else if (a === 'rmSet') draft.entries[ei].sets.splice(si, 1);
+  else if (a === 'step') {
+    const s = draft.entries[ei].sets[si], k = t.dataset.k, d = +t.dataset.d;
+    const ex = exById(draft.entries[ei].exId);
+    if (k === 'w' && draft.entries[ei].unit === 'lvl') s.w = Math.min(20, Math.max(1, (s.w || 0) + d));
+    else if (k === 'w') s.w = Math.max(0, (s.w || 0) + d * (ex?.inc || 2.5));
+    else s.r = Math.max(0, (s.r || 0) + d);
+  }
+  else if (a === 'done') {
+    const s = draft.entries[ei].sets[si];
+    if (exById(draft.entries[ei].exId)?.bwx && s.w == null) s.w = 0;
+    if (!s.done && !isDone({ ...s, done:true }, draft.entries[ei].exId)) { const inp = document.querySelector(`input[data-ei="${ei}"][data-si="${si}"][data-k="${s.w > 0 ? 'r' : 'w'}"]`); inp && inp.focus(); return; }
+    s.done = !s.done;
+    if (s.done) startRest(exById(draft.entries[ei].exId)?.lower ? 120 : 90);
+  }
+  else if (a === 'rest30') { if (rest) { rest.end = Math.max(Date.now(), rest.end) + 30000; rest.buzzed = false; } }
+  else if (a === 'restStop') stopRest();
+  else if (a === 'discard') { askConfirm('Dieses Training verwerfen?', 'Verwerfen', () => { draft = null; stopRest(); persistDraft(); render(); }); return; }
+  else if (a === 'save') { saveDraft(); return; }
+  else if (a === 'closeDlg') { pendingConfirm = null; clearTimeout(previewTimer); $('#dlg').close(); return; }
+  else if (a === 'okDlg') { const fn = pendingConfirm; pendingConfirm = null; $('#dlg').close(); fn && fn(); return; }
+  else if (a === 'hist') histEx = t.dataset.id;
+  else if (a === 'delSession') {
+    const id = t.dataset.id;
+    askConfirm('Dieses Training löschen? XP und Rekorde werden neu berechnet.', 'Löschen', () => { state.sessions = state.sessions.filter(s => s.id !== id); store.deleteSession(id); render(); });
+    return;
+  }
+  else if (a === 'saveProfile') {
+    const bw = num($('#bw').value);
+    if (!bw || bw < 30 || bw > 300) { $('#bwErr').textContent = 'Trag ein Körpergewicht zwischen 30 und 300 kg ein.'; return; }
+    state.profile.bw = bw; state.profile.sex = $('#sex').value; state.profile.plan = $('#plan').value; store.saveProfile(); tab = 'raenge';
+  }
+  else if (a === 'addCustom') {
+    const name = $('#cName').value.trim(); if (!name) return;
+    state.profile.custom = [...(state.profile.custom||[]), { id:'c' + Date.now(), name, lower: $('#cLower').value === '1', std:[0.5,0.75,1,1.25,1.5], f:0.7 }];
+    store.saveProfile();
+  }
+  else if (a === 'demoOn') {
+    if (!ready || demo) return;
+    demo = { state, store, draft };
+    state = genDemo(); draft = null; stopRest();
+    const save = () => {};
+    store = { mode:'demo', saveProfile:save, saveSession:save, deleteSession:save };
+    tab = 'raenge';
+  }
+  else if (a === 'demoOff') {
+    if (!demo) return;
+    ({ state, store, draft } = demo); demo = null; stopRest();
+  }
+  else if (a === 'previewRank') { preview(+t.dataset.to || 1, !!t.dataset.auto); return; }
+  else if (a === 'exportData') {
+    if (demo) { $('#ioMsg').textContent = 'Beende zuerst den Demo-Modus.'; return; }
+    const name = `kraftstufe-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const file = new File([JSON.stringify({ app:'kraftstufe', version:1, exported:Date.now(), state })], name, { type:'application/json' });
+    if (navigator.canShare && navigator.canShare({ files:[file] })) navigator.share({ files:[file], title:'Kraftstufe Backup' }).catch(() => {});
+    else { const url = URL.createObjectURL(file); const l = document.createElement('a'); l.href = url; l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); }
+    return;
+  }
+  else if (a === 'importData') { if (demo) { $('#ioMsg').textContent = 'Beende zuerst den Demo-Modus.'; return; } $('#importFile').click(); return; }
+  else if (a === 'rmCustom') { state.profile.custom = state.profile.custom.filter(c => c.id !== t.dataset.id); store.saveProfile(); }
+  persistDraft(); render();
+});
+document.addEventListener('input', e => {
+  const i = e.target;
+  if (i.dataset.k && draft) {
+    const s = draft.entries[+i.dataset.ei].sets[+i.dataset.si];
+    let v = num(i.value);
+    if (v != null && i.dataset.k === 'w' && draft.entries[+i.dataset.ei].unit === 'lvl') v = Math.min(20, Math.max(1, Math.round(v)));
+    s[i.dataset.k] = v;
+    persistDraft();
+    if (s.done) renderDock();
+  }
+});
+document.addEventListener('change', e => {
+  if (e.target.id !== 'importFile' || !e.target.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      const st = data && data.state;
+      if (data.app !== 'kraftstufe' || !st || !st.profile || !Array.isArray(st.sessions)) throw new Error('format');
+      askConfirm(`Backup mit ${st.sessions.length} Trainings laden? Deine aktuellen Daten auf diesem Gerät werden ersetzt.`, 'Ersetzen', () => {
+        state = { profile: Object.assign({ bw:null, sex:'m', custom:[] }, st.profile), sessions: st.sessions };
+        lsSet('kraftstufe-data', state); tab = 'raenge'; render();
+      });
+    } catch { $('#ioMsg').textContent = 'Diese Datei ist kein gültiges Kraftstufe-Backup.'; }
+  };
+  reader.readAsText(e.target.files[0]);
+  e.target.value = '';
+});
+document.addEventListener('focusin', e => { if (e.target.matches('.step input')) e.target.select(); });
+
+/* ---------- storage ---------- */
+function localStore() {
+  const save = () => lsSet('kraftstufe-data', state);
+  return { mode:'local', saveProfile:save, saveSession:save, deleteSession:save };
+}
+async function cloudStore() {
+  if (!window.claude || !window.claude.use) return null;
+  const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+  if (!db || !user) return null;
+  const uid = await user.id(); if (!uid) return null;
+  const profRef = db.doc(`data/users/${uid}/profile`);
+  const sessCol = profRef.collection('sessions');
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000));
+  const [pSnap, sSnap] = await Promise.race([Promise.all([profRef.get(), sessCol.get()]), timeout]);
+  let chain = Promise.resolve();
+  const q = fn => { chain = chain.then(fn).catch(err => { console.error(err); $('#status').textContent = 'Speichern fehlgeschlagen. Deine Daten bleiben vorerst auf diesem Gerät.'; lsSet('kraftstufe-data', state); }); };
+  const local = lsGet('kraftstufe-data');
+  if (pSnap.exists || !sSnap.empty) {
+    if (pSnap.exists) state.profile = Object.assign({ bw:null, sex:'m', custom:[] }, pSnap.data());
+    state.sessions = sSnap.docs.map(d => d.data());
+  } else if (local) {
+    state = local;
+    q(() => profRef.set(state.profile));
+    state.sessions.forEach(s => q(() => sessCol.doc(s.id).set(s)));
+  }
+  return {
+    mode:'cloud',
+    saveProfile: () => q(() => profRef.set(state.profile)),
+    saveSession: s => q(() => sessCol.doc(s.id).set(s)),
+    deleteSession: id => q(() => sessCol.doc(id).delete()),
+  };
+}
+async function init() {
+  document.querySelectorAll('#tabs button').forEach(b => b.insertAdjacentHTML('afterbegin', `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${NAV_ICONS[b.dataset.tab]}</svg>`));
+  const local = lsGet('kraftstufe-data');
+  if (local && local.sessions) state = local;
+  draft = lsGet('kraftstufe-draft');
+  if (draft) draft.entries.forEach(en => en.sets.forEach(s => { if (s.done === undefined) s.done = s.w > 0 && s.r > 0; }));
+  store = localStore();
+  render();
+  let cloud = null;
+  try { cloud = await cloudStore(); } catch (err) { console.warn(err); }
+  if (cloud) { store = cloud; $('#status').textContent = 'Deine Daten werden in deinem Konto gespeichert und sind nur für dich sichtbar.'; }
+  else $('#status').textContent = 'Deine Daten werden auf diesem Gerät gespeichert. Sichere sie ab und zu im Profil.';
+  ready = true;
+  render();
+}
+init();
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW', err)));
+}
+})();
+</script>
+</body>
+</html>
